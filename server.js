@@ -16,6 +16,12 @@ const connectDB = require("./config/db");
 // Importeer de order routes. Deze routes bevatten alle endpoints voor bestellingen.
 const orderRoutes = require("./routes/orderRoutes");
 
+// Importeer de auth routes. Deze routes bevatten het login endpoint voor de admin.
+const authRoutes = require("./routes/authRoutes");
+
+// Importeer de JWT middleware voor beveiligde routes.
+const authMiddleware = require("./middleware/authMiddleware");
+
 // Maak een Express-applicatie aan.
 const app = express();
 
@@ -32,6 +38,10 @@ app.use(express.json());
 // Koppel alle order endpoints aan /api/orders.
 // Bijvoorbeeld: router.post("/") wordt hierdoor POST /api/orders.
 app.use("/api/orders", orderRoutes);
+
+// Koppel het admin login endpoint aan /api/auth.
+// Bijvoorbeeld: router.post("/login") wordt hierdoor POST /api/auth/login.
+app.use("/api/auth", authRoutes);
 
 // Basisroute om snel te controleren of de API draait.
 app.get("/", (req, res) => {
