@@ -11,6 +11,9 @@ const {
   deleteOrder,
 } = require("../controllers/orderController");
 
+// Hergebruik de bestaande JWT-middleware voor admin-protected routes.
+const authMiddleware = require("../middleware/authMiddleware");
+
 // Maak een router aan. Deze wordt later in server.js gekoppeld aan /api/orders.
 const router = express.Router();
 
@@ -26,13 +29,13 @@ router.get("/", getOrders);
 // Endpoint om een specifieke bestelling op te halen.
 router.get("/:id", getOrderById);
 
-// PATCH /api/orders/:id/status
-// Endpoint om alleen de status van een bestelling te wijzigen.
-router.patch("/:id/status", updateOrderStatus);
+// PATCH /api/orders/:id/status en DELETE /api/orders/:id zijn admin-protected routes.
+// Deze routes vereisen een geldige JWT voordat de controller wordt uitgevoerd.
+router.patch("/:id/status", authMiddleware, updateOrderStatus);
 
 // DELETE /api/orders/:id
 // Endpoint om een bestelling te verwijderen.
-router.delete("/:id", deleteOrder);
+router.delete("/:id", authMiddleware, deleteOrder);
 
 // Exporteer de router zodat server.js deze kan gebruiken.
 module.exports = router;
