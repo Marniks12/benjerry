@@ -1,5 +1,5 @@
-// Importeer Express zodat we een aparte router kunnen maken voor order endpoints.
 const express = require("express");
+const rateLimit = require("express-rate-limit");
 
 // Importeer de controllerfuncties. De routes bepalen de URL,
 // de controller bevat de echte logica voor database-acties.
@@ -14,12 +14,23 @@ const {
 // Hergebruik de bestaande JWT-middleware voor admin-protected routes.
 const authMiddleware = require("../middleware/authMiddleware");
 
+// Rate limiter tegen spamming van bestellingen (max 15 bestellingen per minuut per IP).
+const orderLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    message: "Too many order requests from this IP. Please wait a minute.",
+  },
+});
+
 // Maak een router aan. Deze wordt later in server.js gekoppeld aan /api/orders.
 const router = express.Router();
 
 // POST /api/orders
 // Endpoint om een nieuwe Ben & Jerry's bestelling te maken.
-router.post("/", createOrder);
+router.post("/", orderLimiter, createOrder);
 
 // GET /api/orders
 // Endpoint om alle bestellingen op te halen, nieuwste eerst.

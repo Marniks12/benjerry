@@ -26,7 +26,12 @@ const loginAdmin = async (req, res) => {
       });
     }
 
-    if (typeof username !== "string" || typeof password !== "string") {
+    if (
+      typeof username !== "string" ||
+      typeof password !== "string" ||
+      username.length > 50 ||
+      password.length > 100
+    ) {
       return res.status(401).json({
         message: "Invalid credentials",
       });
@@ -72,9 +77,9 @@ const loginAdmin = async (req, res) => {
   } catch (error) {
     console.error("LOGIN ERROR:", error.message);
 
+    // Geef geen interne foutdetails (error.message) terug aan de buitenwereld om datalelekken te voorkomen.
     res.status(500).json({
       message: "Server error while logging in",
-      error: error.message,
     });
   }
 };

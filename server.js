@@ -22,18 +22,33 @@ const authRoutes = require("./routes/authRoutes");
 // Importeer de JWT middleware voor beveiligde routes.
 const authMiddleware = require("./middleware/authMiddleware");
 
+// Importeer beveiligings- en performance-middleware.
+const helmet = require("helmet");
+const compression = require("compression");
+const mongoSanitize = require("express-mongo-sanitize");
+
 // Maak een Express-applicatie aan.
 const app = express();
 
+const path = require("path");
+
 // Bepaal op welke poort de server moet draaien.
-// Als PORT niet in .env staat, gebruikt de server standaard poort 3000.
 const PORT = process.env.PORT || 3000;
+
+// Beveilig de app met HTTP headers (tegen clickjacking, XSS, MIME-sniffing).
+app.use(helmet({ contentSecurityPolicy: false }));
+
+// Comprimeer API-responses (Gzip) voor een snellere laadtijd.
+app.use(compression());
 
 // Activeer CORS middleware voor alle routes.
 app.use(cors());
 
-// Zorg dat Express JSON-data uit requests kan lezen.
-app.use(express.json());
+// Zorg dat Express JSON-data uit requests kan lezen (beperkt tot 10kb tegen DoS payload aanvallen).
+app.use(express.json({ limit: "10kb" }));
+
+// Voorkom NoSQL Query Injection door $ en . te verwijderen uit req.body en req.params.
+app.use(mongoSanitize());
 
 // Koppel alle order endpoints aan /api/orders.
 // Bijvoorbeeld: router.post("/") wordt hierdoor POST /api/orders.
@@ -43,10 +58,30 @@ app.use("/api/orders", orderRoutes);
 // Bijvoorbeeld: router.post("/login") wordt hierdoor POST /api/auth/login.
 app.use("/api/auth", authRoutes);
 
+// Serveer statische bestanden van de frontend als dist map bestaat
+const frontendDist = path.join(__dirname, "../benjerrys-frontend/dist");
+app.use(express.static(frontendDist));
+
 // Basisroute om snel te controleren of de API draait.
-app.get("/", (req, res) => {
+app.get("/api-status", (req, res) => {
   res.json({
     message: "Ben & Jerry's API is running",
+  });
+});
+
+// SPA Fallback: Vang alle niet-API routes op en stuur index.html terug.
+// Dit voorkomt 404 meldingen bij het herladen (F5/refresh) op routes zoals /login of /orders.
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api")) {
+    return next();
+  }
+  const indexPath = path.join(frontendDist, "index.html");
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      res.status(404).json({
+        message: "Route not found",
+      });
+    }
   });
 });
 
