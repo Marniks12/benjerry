@@ -96,7 +96,7 @@ const createOrder = async (req, res) => {
     }
 
     res.status(500).json({
-      message: "Server error while creating order",
+      message: "Server error while creating order: " + (error.stack || error.message || error),
     });
   }
 };
