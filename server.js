@@ -25,7 +25,7 @@ const authMiddleware = require("./middleware/authMiddleware");
 // Importeer beveiligings- en performance-middleware.
 const helmet = require("helmet");
 const compression = require("compression");
-const mongoSanitize = require("express-mongo-sanitize");
+const mongoSanitize = require("./middleware/mongoSanitize");
 
 // Maak een Express-applicatie aan.
 const app = express();
@@ -48,7 +48,7 @@ app.use(cors());
 app.use(express.json({ limit: "10kb" }));
 
 // Voorkom NoSQL Query Injection door $ en . te verwijderen uit req.body en req.params.
-app.use(mongoSanitize());
+app.use(mongoSanitize);
 
 // Koppel alle order endpoints aan /api/orders.
 // Bijvoorbeeld: router.post("/") wordt hierdoor POST /api/orders.
