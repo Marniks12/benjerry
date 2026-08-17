@@ -45,6 +45,10 @@ const createOrder = async (req, res) => {
     const cleanAddress = sanitizeString(address);
     const cleanEmail = sanitizeString(email);
 
+    const cleanFlavor = (flavor || "").toLowerCase();
+    const cleanTopping = (topping || "").toLowerCase();
+    const cleanCone = (cone || "").toLowerCase();
+
     if (!cleanName || cleanName.length > 100) {
       return res.status(400).json({ message: "Customer name is required (max 100 characters)" });
     }
@@ -54,26 +58,26 @@ const createOrder = async (req, res) => {
     if (!cleanEmail || cleanEmail.length > 100 || !/^\S+@\S+\.\S+$/.test(cleanEmail)) {
       return res.status(400).json({ message: "A valid email address is required (max 100 characters)" });
     }
-    if (!ALLOWED_FLAVORS.includes(flavor)) {
+    if (!ALLOWED_FLAVORS.includes(cleanFlavor)) {
       return res.status(400).json({ message: "Invalid flavor selection", allowedFlavors: ALLOWED_FLAVORS });
     }
-    if (!ALLOWED_TOPPINGS.includes(topping)) {
+    if (!ALLOWED_TOPPINGS.includes(cleanTopping)) {
       return res.status(400).json({ message: "Invalid topping selection", allowedToppings: ALLOWED_TOPPINGS });
     }
-    if (!ALLOWED_CONES.includes(cone)) {
+    if (!ALLOWED_CONES.includes(cleanCone)) {
       return res.status(400).json({ message: "Invalid cone selection", allowedCones: ALLOWED_CONES });
     }
 
     // Herbereken de prijs veilig op de server op basis van de configuratie.
-    const calculatedPrice = 5 + (TOPPING_PRICES[topping] || 0) + (CONE_PRICES[cone] || 0);
+    const calculatedPrice = 5 + (TOPPING_PRICES[cleanTopping] || 0) + (CONE_PRICES[cleanCone] || 0);
 
     const orderData = {
       customerName: cleanName,
       address: cleanAddress,
       email: cleanEmail,
-      flavor,
-      topping,
-      cone,
+      flavor: cleanFlavor,
+      topping: cleanTopping,
+      cone: cleanCone,
       scoops: 1,
       price: calculatedPrice,
       status: "pending", // Klant mag status niet bepalen; altijd pending.
