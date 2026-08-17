@@ -71,7 +71,7 @@ app.get("/api-status", (req, res) => {
 
 // SPA Fallback: Vang alle niet-API routes op en stuur index.html terug.
 // Dit voorkomt 404 meldingen bij het herladen (F5/refresh) op routes zoals /login of /orders.
-app.get("*", (req, res, next) => {
+app.get(/(.*)/, (req, res, next) => {
   if (req.path.startsWith("/api")) {
     return next();
   }
