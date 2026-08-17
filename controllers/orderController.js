@@ -45,9 +45,9 @@ const createOrder = async (req, res) => {
     const cleanAddress = sanitizeString(address);
     const cleanEmail = sanitizeString(email);
 
-    const cleanFlavor = (flavor || "").toLowerCase();
-    const cleanTopping = (topping || "").toLowerCase();
-    const cleanCone = (cone || "").toLowerCase();
+    const cleanFlavor = sanitizeString(flavor).toLowerCase();
+    const cleanTopping = sanitizeString(topping).toLowerCase();
+    const cleanCone = sanitizeString(cone).toLowerCase();
 
     if (!cleanName || cleanName.length > 100) {
       return res.status(400).json({ message: "Customer name is required (max 100 characters)" });
